@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">NovaSentinel</string>
+    <string name="usuario">Usuario</string>
+    <string name="entidad">Entidad</string>
+    <string name="correo">Correo</string>
+    <string name="contraseña">Contraseña</string>
+    <string name="checkbox">Recuerdame</string>
+    <string name="entrar">Entrar</string>
+    <string name="olvido">¿Olvidaste la Contreseña?</string>
+    <string name="registrar">REGISTRATE</string>
+    <string name="registra">REGISTRAR</string>
+    <string name="nombreE">Nombre Empresa</string>
+    <string name="correoE">Correo Empresa</string>
+    <string name="nitE">Nit Empresa</string>
+    <string name="contraseñaR">Repita Contraseña</string>
+    <string name="yacuenta">YA TIENES CUENTA</string>
+    <string name="nomyape">Nombres y Apellidos</string>
+    <string name="id">Identificacion</string>
+    <string name="fecha">Fecha de Nacimiento</string>
+    <string name="genero">Genero</string>
+    <string name="enviar">ENVIAR</string>
+    <string name="title_activity_menu_entidad">MenuEntidadActivity</string>
+    <string name="title_activity_menu_usuario">MenuUsuarioActivity</string>
+    <string name="acoso">Acoso</string>
+    <string name="perfil">Perfil</string>
+    <string name="boton">Boton</string>
+    <string name="historial">Historial</string>
+    <string name="notificacion">Notificacion</string>
+    <string name="cerrar">Cerrar</string>
+    <string name="guardar">Actualizar</string>
+    <string name="historico">Historial de Incidentes</string>
+</resources>

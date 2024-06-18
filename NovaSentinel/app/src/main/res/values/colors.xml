@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cafe_claro">#EDDACF</color>
+    <color name="cafe_medio">#C49C86</color>
+    <color name="cafe_oscuro">#9F715D</color>
+    <color name="blanco">#FFFFFF</color>
+    <color name="naranja">#FFAE6A</color>
+    <color name="amarillo">#FFD792</color>
+    <color name="naranjat">#C6691B</color>
+    <color name="transparent">#EDDACF</color>
+    #C6691B
+
+
+    //style checkbox cafe
+    <color name="color_checked">#9F715D</color> <!-- Color cuando está marcada -->
+    <color name="color_pressed">#9F715D</color> <!-- Color cuando está presionada -->
+    <color name="color_unchecked">#9F715D</color> <!-- Color cuando no está marcada -->
+//style checkbox naranaj
+
+    <color name="color_checkedn">@color/naranja</color> <!-- Color cuando está marcada -->
+    <color name="color_pressedn">@color/naranja</color> <!-- Color cuando está presionada -->
+    <color name="color_uncheckedn">@color/naranja</color> <!-- Color cuando no está marcada -->
+</resources>
