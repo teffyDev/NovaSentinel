@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -25,6 +26,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     private lateinit var txtGenero: EditText
     private lateinit var txtContraseñaU: EditText
     private lateinit var txtContraseñaUR: EditText
+    private lateinit var txtTipoIdentificacionU: EditText
+    private lateinit var txtEntidadAsoc: EditText
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.US)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +46,12 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         txtGenero = findViewById(R.id.TextGenero)
         txtContraseñaU = findViewById(R.id.txtContraseñaU)
         txtContraseñaUR = findViewById(R.id.txtContraseñaUR)
+        txtTipoIdentificacionU = findViewById(R.id.txtTipoIdentificacionU)
+        txtEntidadAsoc = findViewById(R.id.TexEntidadAsoc)
+
+        // Desactivar teclado para los campos de tipo de documento y entidad
+        txtTipoIdentificacionU.inputType = InputType.TYPE_NULL
+        txtEntidadAsoc.inputType = InputType.TYPE_NULL
 
         // Configurar el selector de género
         txtGenero.setOnClickListener {
@@ -52,6 +61,28 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         // Configurar el selector de fecha
         txtFechaU.setOnClickListener {
             showDatePickerDialog()
+        }
+
+        // Configurar el selector de tipo de identificación
+        txtTipoIdentificacionU.setOnClickListener {
+            showDocumentTypePickerDialog()
+        }
+        txtTipoIdentificacionU.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                hideKeyboard(v)
+                showDocumentTypePickerDialog()
+            }
+        }
+
+        // Configurar el selector de entidad asociada
+        txtEntidadAsoc.setOnClickListener {
+            showEntityPickerDialog()
+        }
+        txtEntidadAsoc.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                hideKeyboard(v)
+                showEntityPickerDialog()
+            }
         }
 
         // Asegurarse de que el teclado no aparezca
@@ -95,6 +126,16 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         builder.show()
     }
 
+    private fun showDocumentTypePickerDialog() {
+        val documentTypes = arrayOf("Tarjeta de Identidad", "Cédula de Ciudadanía", "Cédula de Extranjería", "Pasaporte")
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Selecciona tu tipo de identificación")
+        builder.setItems(documentTypes) { _, which ->
+            txtTipoIdentificacionU.setText(documentTypes[which])
+        }
+        builder.show()
+    }
+
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
@@ -124,6 +165,23 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         return date.before(calendar.time)
     }
 
+    private fun showEntityPickerDialog() {
+        db.collection("entidades")
+            .get()
+            .addOnSuccessListener { result ->
+                val entities = result.map { it.getString("nombreEmpresa") ?: "Sin nombre" }
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Selecciona tu entidad")
+                builder.setItems(entities.toTypedArray()) { _, which ->
+                    txtEntidadAsoc.setText(entities[which])
+                }
+                builder.show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error al obtener entidades: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun registrarUsuario() {
         // Obtener los datos del usuario
         val nombre = txtNombreU.text.toString().trim()
@@ -131,6 +189,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         val correo = txtCorreoU.text.toString().trim()
         val fechaNacimiento = txtFechaU.text.toString().trim()
         val genero = txtGenero.text.toString().trim()
+        val tipoIdentificacion = txtTipoIdentificacionU.text.toString().trim()
+        val entidadAsociada = txtEntidadAsoc.text.toString().trim()
         val contraseña = txtContraseñaU.text.toString().trim()
         val contraseñaRepetida = txtContraseñaUR.text.toString().trim()
 
@@ -153,7 +213,9 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                         "identificacion" to identificacion,
                         "correo" to correo,
                         "fechaNacimiento" to fechaNacimiento,
-                        "genero" to genero
+                        "genero" to genero,
+                        "tipoIdentificacion" to tipoIdentificacion,
+                        "entidadAsociada" to entidadAsociada
                         // Agrega más campos según sea necesario
                     )
 
