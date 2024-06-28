@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/notificacionFragment"
+        android:icon="@drawable/notificacion"
+        android:title="@string/notificacion" />
+
+
+    <item
+        android:id="@+id/historialFragment"
+        android:icon="@drawable/historial"
+        android:title="@string/historial" />
+
+    <item
+        android:id="@+id/cerrareFragment"
+        android:icon="@drawable/salida"
+        android:title="@string/cerrar" />
+
+</menu>

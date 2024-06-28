@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "887372864188",
+    "project_id": "novasentinel-30414",
+    "storage_bucket": "novasentinel-30414.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887372864188:android:724ad0a6042bdc43968eb9",
+        "android_client_info": {
+          "package_name": "com.example.novasentinel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBkPQkjWn7YiT9tWhSv8LVCgzbtB08ww4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

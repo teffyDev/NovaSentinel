@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/botonFragment"
+        android:icon="@drawable/iconboton"
+        android:title="@string/boton" />
+
+    <item
+        android:id="@+id/perfilFragment"
+        android:icon="@drawable/iconperfil"
+        android:title="@string/perfil" />
+
+    <item
+        android:id="@+id/acosoFragment"
+        android:icon="@drawable/iconacoso"
+        android:title="@string/acoso" />
+
+    <item
+        android:id="@+id/cerraruFragment"
+        android:icon="@drawable/iconcerrarsesion"
+        android:title="@string/cerrar" />
+
+
+</menu>
