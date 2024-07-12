@@ -2,12 +2,14 @@ package com.example.novasentinel
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 
 class InicioEntidadActivity : AppCompatActivity() {
 
@@ -59,6 +61,14 @@ class InicioEntidadActivity : AppCompatActivity() {
                             .addOnSuccessListener { document ->
                                 if (document.exists()) {
                                     // El usuario actual es una entidad
+                                    FirebaseMessaging.getInstance().subscribeToTopic("entidades_global")
+                                        .addOnCompleteListener { task ->
+                                            if (!task.isSuccessful) {
+                                                Log.w("FCM", "Suscripción fallida: ${task.exception?.message}")
+                                            } else {
+                                                Log.d("FCM", "Suscripción exitosa")
+                                            }
+                                        }
                                     val intent = Intent(this, MenuEntidadActivity::class.java)
                                     startActivity(intent)
                                     finish() // Esto cierra la actividad actual, por lo que al volver atrás desde MenuEntidadActivity, no volverá aquí.

@@ -53,6 +53,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging:23.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)

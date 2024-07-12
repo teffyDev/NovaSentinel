@@ -1,0 +1,37 @@
+[debug] [2024-07-10T18:55:38.080Z] ----------------------------------------------------------------------
+[debug] [2024-07-10T18:55:38.085Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\TheRi\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-07-10T18:55:38.086Z] CLI Version:   13.13.1
+[debug] [2024-07-10T18:55:38.086Z] Platform:      win32
+[debug] [2024-07-10T18:55:38.086Z] Node Version:  v20.15.1
+[debug] [2024-07-10T18:55:38.086Z] Time:          Wed Jul 10 2024 13:55:38 GMT-0500 (hora estándar de Colombia)
+[debug] [2024-07-10T18:55:38.086Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-10T18:55:38.185Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-10T18:55:38.186Z] > authorizing via signed-in user (therios1610@gmail.com)
+[debug] [2024-07-10T18:55:38.186Z] [iam] checking project novasentinel-30414 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-07-10T18:55:38.189Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/novasentinel-30414:testIamPermissions [none]
+[debug] [2024-07-10T18:55:38.189Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/novasentinel-30414:testIamPermissions x-goog-quota-user=projects/novasentinel-30414
+[debug] [2024-07-10T18:55:38.189Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/novasentinel-30414:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-07-10T18:55:38.789Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/novasentinel-30414:testIamPermissions 401
+[debug] [2024-07-10T18:55:38.789Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/novasentinel-30414:testIamPermissions {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloudresourcemanager.v1.Projects.TestIamPermissions","service":"cloudresourcemanager.googleapis.com"}}]}}
+[debug] [2024-07-10T18:55:38.790Z] [iam] error while checking permissions, command may fail: FirebaseError: HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2024-07-10T18:55:38.791Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/novasentinel-30414/serviceAccounts/novasentinel-30414@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-07-10T18:55:38.791Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/novasentinel-30414/serviceAccounts/novasentinel-30414@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-07-10T18:55:39.195Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/novasentinel-30414/serviceAccounts/novasentinel-30414@appspot.gserviceaccount.com:testIamPermissions 401
+[debug] [2024-07-10T18:55:39.196Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/novasentinel-30414/serviceAccounts/novasentinel-30414@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.iam.admin.v1.IAM.TestIamPermissions","service":"iam.googleapis.com"}}]}}
+[debug] [2024-07-10T18:55:39.196Z] [functions] service account IAM check errored, deploy may fail: HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.iam.admin.v1.IAM.TestIamPermissions","service":"iam.googleapis.com"}}]}},"response":{"statusCode":401}},"exit":1,"message":"HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":401}
+[info] 
+[info] === Deploying to 'novasentinel-30414'...
+[info] 
+[info] i  deploying functions 
+[info] +  functions: Finished running predeploy script. 
+[debug] [2024-07-10T18:55:39.202Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/novasentinel-30414 [none]
+[debug] [2024-07-10T18:55:39.455Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/novasentinel-30414 401
+[debug] [2024-07-10T18:55:39.455Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/novasentinel-30414 {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}}
+[debug] [2024-07-10T18:55:39.455Z] HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2024-07-10T18:55:39.653Z] FirebaseError: HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+    at responseToError (C:\Users\TheRi\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:49:12)
+    at RetryOperation._fn (C:\Users\TheRi\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:305:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[error] 
+[error] Error: Failed to get Firebase project novasentinel-30414. Please make sure the project exists and your account has permission to access it.

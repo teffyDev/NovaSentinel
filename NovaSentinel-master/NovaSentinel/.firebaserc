@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "novasentinel-30414",
+    "therios": "novasentinel-30414"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}
