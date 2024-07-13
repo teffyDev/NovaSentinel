@@ -159,21 +159,26 @@ class PerfilFragment : Fragment() {
         val usuarioActual = auth.currentUser
         if (usuarioActual != null) {
             val userId = usuarioActual.uid
-            val usuario = hashMapOf(
-                "nombre" to nombre,
-                "identificacion" to identificacion,
-                "correo" to correo,
-                "fechaNacimiento" to fechaNacimiento,
-                "genero" to genero
-            )
+            val usuario = hashMapOf<String, Any>()
+
+            // Agregar solo los campos que se van a actualizar
+            if (nombre.isNotEmpty()) usuario["nombre"] = nombre
+            if (identificacion.isNotEmpty()) usuario["identificacion"] = identificacion
+            if (correo.isNotEmpty()) usuario["correo"] = correo
+            if (fechaNacimiento.isNotEmpty()) usuario["fechaNacimiento"] = fechaNacimiento
+            if (genero.isNotEmpty()) usuario["genero"] = genero
+
+            // Realizar la actualización parcial
             db.collection("usuarios").document(userId)
-                .set(usuario)
+                .update(usuario)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Error al actualizar datos: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
+
         }
     }
 }
+
