@@ -2,7 +2,6 @@ package com.example.novasentinel
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -61,17 +60,25 @@ class InicioEntidadActivity : AppCompatActivity() {
                             .addOnSuccessListener { document ->
                                 if (document.exists()) {
                                     // El usuario actual es una entidad
-                                    FirebaseMessaging.getInstance().subscribeToTopic("entidades_global")
-                                        .addOnCompleteListener { task ->
-                                            if (!task.isSuccessful) {
-                                                Log.w("FCM", "Suscripción fallida: ${task.exception?.message}")
-                                            } else {
-                                                Log.d("FCM", "Suscripción exitosa")
-                                            }
+                                    // Obtener el token FCM
+                                    FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
+                                        if (tokenTask.isSuccessful) {
+                                            val token = tokenTask.result
+                                            // Guardar el token FCM en Firestore
+                                            entidadesRef.document(usuarioActual.uid)
+                                                .update("fcmToken", token)
+                                                .addOnSuccessListener {
+                                                    val intent = Intent(this, MenuEntidadActivity::class.java)
+                                                    startActivity(intent)
+                                                    finish() // Esto cierra la actividad actual, por lo que al volver atrás desde MenuEntidadActivity, no volverá aquí.
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Toast.makeText(this, "Error al guardar el token FCM: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                }
+                                        } else {
+                                            Toast.makeText(this, "Error al obtener el token FCM: ${tokenTask.exception?.message}", Toast.LENGTH_SHORT).show()
                                         }
-                                    val intent = Intent(this, MenuEntidadActivity::class.java)
-                                    startActivity(intent)
-                                    finish() // Esto cierra la actividad actual, por lo que al volver atrás desde MenuEntidadActivity, no volverá aquí.
+                                    }
                                 } else {
                                     // El usuario actual no es una entidad
                                     Toast.makeText(this, "Usuario no autorizado", Toast.LENGTH_SHORT).show()
@@ -91,5 +98,4 @@ class InicioEntidadActivity : AppCompatActivity() {
                 }
             }
     }
-
 }

@@ -3,25 +3,30 @@ package com.example.novasentinel.ui.boton
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.example.novasentinel.R
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.IOException
 
 class BotonFragment : Fragment() {
 
     private lateinit var imageButton: ImageButton
     private lateinit var imageButtonNormal: Drawable
     private lateinit var imageButtonPressed: Drawable
-    private val client = OkHttpClient()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,7 +51,10 @@ class BotonFragment : Fragment() {
                 MotionEvent.ACTION_UP -> {
                     // Cambiar imagen al soltar
                     imageButton.setImageDrawable(imageButtonNormal)
-                    sendNotification()
+                    // Enviar notificación
+                    CoroutineScope(Dispatchers.IO).launch {
+                        enviarNotificacion()
+                    }
                 }
             }
             true // Indica que se ha manejado el evento
@@ -55,31 +63,57 @@ class BotonFragment : Fragment() {
         return view
     }
 
-    private fun sendNotification() {
-        val url = "https://us-central1-novasentinel-30414.cloudfunctions.net/sendPushNotification"
-        val json = JSONObject()
-        json.put("title", "Emergencia")
-        json.put("body", "¡Alguien presionó el botón de emergencia!")
+    private suspend fun enviarNotificacion() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("entidades")
+                .get()
+                .addOnSuccessListener { result ->
+                    for (document in result) {
+                        val token = document.getString("fcmToken")
+                        if (token != null) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                enviarNotificacionConToken(token)
+                            }
+                        } else {
+                            Log.w("BotonFragment", "Entidad sin token FCM")
+                        }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("BotonFragment", "Error al obtener tokens FCM: ${e.message}")
+                }
+        } else {
+            Log.e("BotonFragment", "Usuario no autenticado")
+        }
+    }
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaType(), json.toString())
-        val request = Request.Builder().url(url).post(body).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                // Maneja la falla de la solicitud
-                e.printStackTrace()
-                Log.e("FCM", "Request failed: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                // Maneja la respuesta de la solicitud
+    private suspend fun enviarNotificacionConToken(token: String) {
+        try {
+            val client = OkHttpClient()
+            val json = JSONObject()
+            json.put("to", token)
+            val notification = JSONObject()
+            notification.put("title", "Alerta de emergencia")
+            notification.put("body", "Un usuario ha presionado el botón de emergencia")
+            json.put("notification", notification)
+            val body = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+            val request = Request.Builder()
+                .header("Authorization", "key=AIzaSyAGUnJnO8fs_vtjDhmMJI_UwzsGt4Evu80")  // Reemplaza "TU_CLAVE_DEL_SERVIDOR" con tu clave real
+                .url("https://fcm.googleapis.com/fcm/send")
+                .post(body)
+                .build()
+            client.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
-                    Log.d("FCM", "Notificación enviada exitosamente")
+                    Log.d("BotonFragment", "Notificación enviada exitosamente")
                 } else {
-                    Log.e("FCM", "Fallo al enviar la notificación: ${response.message}")
+                    Log.e("BotonFragment", "Error en la respuesta del servidor FCM: ${response.message}, Cuerpo de respuesta: ${response.body?.string()}")
                 }
             }
-        })
+        } catch (e: Exception) {
+            Log.e("BotonFragment", "Error al enviar la notificación: ${e.message}")
+        }
     }
 }
 
