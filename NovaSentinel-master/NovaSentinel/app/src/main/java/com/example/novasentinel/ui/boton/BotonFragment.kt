@@ -11,8 +11,7 @@ import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.novasentinel.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.auth.oauth2.GoogleCredentials
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,6 +20,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.DataOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.concurrent.Executors
 
 class BotonFragment : Fragment() {
 
@@ -53,7 +56,7 @@ class BotonFragment : Fragment() {
                     imageButton.setImageDrawable(imageButtonNormal)
                     // Enviar notificación
                     CoroutineScope(Dispatchers.IO).launch {
-                        enviarNotificacion()
+                        enviarNotificacion("d1eU9sjtTg-8OtIr7AhNNd:APA91bEtthcX4Dxw96SIq0c6WD1c5dau-YHcCMBYrnodm2ckYQLao4AGlnn46RR2bOviGwzJY61hCkmKQe5IJ4fVI9t882HyF3JvhT0BYsP6cALAsw2SuWJYekWGk3UvtINmFdicll7D")
                     }
                 }
             }
@@ -63,57 +66,54 @@ class BotonFragment : Fragment() {
         return view
     }
 
-    private suspend fun enviarNotificacion() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("entidades")
-                .get()
-                .addOnSuccessListener { result ->
-                    for (document in result) {
-                        val token = document.getString("fcmToken")
-                        if (token != null) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                enviarNotificacionConToken(token)
-                            }
-                        } else {
-                            Log.w("BotonFragment", "Entidad sin token FCM")
-                        }
-                    }
+    private fun enviarNotificacion(token: String) {
+        val executor = Executors.newSingleThreadExecutor()
+        executor.execute {
+            try {
+                val accessToken = getAccessToken()
+                val message = JSONObject().apply {
+                    put("message", JSONObject().apply {
+                        put("token", token)
+                        put("notification", JSONObject().apply {
+                            put("title", "Breaking News")
+                            put("body", "New news story available.")
+                        })
+                        put("data", JSONObject().apply {
+                            put("story_id", "story_12345")
+                        })
+                    })
                 }
-                .addOnFailureListener { e ->
-                    Log.e("BotonFragment", "Error al obtener tokens FCM: ${e.message}")
+
+                val url = URL("https://fcm.googleapis.com/v1/projects/novasentinel-30414/messages:send")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Authorization", "Bearer $accessToken")
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+
+                val outputStream = DataOutputStream(conn.outputStream)
+                outputStream.writeBytes(message.toString())
+                outputStream.flush()
+                outputStream.close()
+
+                val responseCode = conn.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.d("FCM", "Notification sent successfully.")
+                } else {
+                    Log.e("FCM", "Failed to send notification. Response code: $responseCode")
                 }
-        } else {
-            Log.e("BotonFragment", "Usuario no autenticado")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
-    private suspend fun enviarNotificacionConToken(token: String) {
-        try {
-            val client = OkHttpClient()
-            val json = JSONObject()
-            json.put("to", token)
-            val notification = JSONObject()
-            notification.put("title", "Alerta de emergencia")
-            notification.put("body", "Un usuario ha presionado el botón de emergencia")
-            json.put("notification", notification)
-            val body = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-            val request = Request.Builder()
-                .header("Authorization", "key=AIzaSyAGUnJnO8fs_vtjDhmMJI_UwzsGt4Evu80")  // Reemplaza "TU_CLAVE_DEL_SERVIDOR" con tu clave real
-                .url("https://fcm.googleapis.com/fcm/send")
-                .post(body)
-                .build()
-            client.newCall(request).execute().use { response ->
-                if (response.isSuccessful) {
-                    Log.d("BotonFragment", "Notificación enviada exitosamente")
-                } else {
-                    Log.e("BotonFragment", "Error en la respuesta del servidor FCM: ${response.message}, Cuerpo de respuesta: ${response.body?.string()}")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("BotonFragment", "Error al enviar la notificación: ${e.message}")
-        }
+    private fun getAccessToken(): String {
+        val credentials = GoogleCredentials
+            .fromStream(requireContext().assets.open("service_account.json"))
+            .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
+        credentials.refreshIfExpired()
+        return credentials.accessToken.tokenValue
     }
 }
 
