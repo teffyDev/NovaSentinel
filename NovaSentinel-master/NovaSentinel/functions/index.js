@@ -1,23 +1,56 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 admin.initializeApp();
 
-exports.sendPushNotification = functions.https.onRequest((request, response) => {
-    const message = {
-        notification: {
-            title: request.body.title,
-            body: request.body.body
-        },
-        topic: "entidades_global"  // Envía la notificación a todas las entidades
-    };
+exports.sendNotification = functions.firestore.document('alerts/{alertId}')
+    .onCreate((snap, context) => {
+        const alert = snap.data();
+        const entityId = alert.entityId;
 
-    admin.messaging().send(message)
-        .then((response) => {
-            console.log("Successfully sent message:", response);
-            return response.status(200).send("Notification sent successfully");
-        })
-        .catch((error) => {
-            console.error("Error sending message:", error);
-            return response.status(500).send("Error sending message");
-        });
+        return admin.firestore().collection('entities').doc(entityId).get()
+            .then(doc => {
+                if (!doc.exists) {
+                    console.log('No such document!');
+                    return;
+                }
+                const token = doc.data().token;
+
+                const message = {
+                    notification: {
+                        title: alert.title,
+                        body: alert.body
+                    },
+                    token: token,
+                    data: {
+                        latitude: alert.latitude,
+                        longitude: alert.longitude
+                    }
+                };
+
+                return admin.messaging().send(message);
+            })
+            .then(response => {
+                console.log('Notification sent successfully:', response);
+                return;
+            })
+            .catch(error => {
+                console.error('Error sending notification:', error);
+            });
+    });
+
+exports.updateToken = functions.https.onRequest((request, response) => {
+    const token = request.body.token;
+    const entityId = request.body.entityId;
+
+    admin.firestore().collection('entities').doc(entityId).update({
+        token: token
+    })
+    .then(() => {
+        response.send("Token updated successfully");
+    })
+    .catch((error) => {
+        console.error("Error updating token: ", error);
+        response.status(500).send(error);
+    });
 });
+

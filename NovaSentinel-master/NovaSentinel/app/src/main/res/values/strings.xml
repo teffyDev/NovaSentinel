@@ -29,4 +29,6 @@
     <string name="cerrar">Cerrar</string>
     <string name="guardar">Actualizar</string>
     <string name="historico">Historial de Incidentes</string>
+    <string name="default_channel_name">Default Channel</string>
+    <string name="default_channel_description">Channel for default notifications</string>
 </resources>

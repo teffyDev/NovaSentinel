@@ -1,5 +1,7 @@
 package com.example.novasentinel.ui.boton
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
@@ -8,22 +10,13 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.novasentinel.R
-import com.google.auth.oauth2.GoogleCredentials
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.DataOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.concurrent.Executors
+import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class BotonFragment : Fragment() {
 
@@ -54,10 +47,8 @@ class BotonFragment : Fragment() {
                 MotionEvent.ACTION_UP -> {
                     // Cambiar imagen al soltar
                     imageButton.setImageDrawable(imageButtonNormal)
-                    // Enviar notificación
-                    CoroutineScope(Dispatchers.IO).launch {
-                        enviarNotificacion("d1eU9sjtTg-8OtIr7AhNNd:APA91bEtthcX4Dxw96SIq0c6WD1c5dau-YHcCMBYrnodm2ckYQLao4AGlnn46RR2bOviGwzJY61hCkmKQe5IJ4fVI9t882HyF3JvhT0BYsP6cALAsw2SuWJYekWGk3UvtINmFdicll7D")
-                    }
+                    // Obtener ubicación y enviar notificación
+                    getCurrentLocation()
                 }
             }
             true // Indica que se ha manejado el evento
@@ -66,54 +57,71 @@ class BotonFragment : Fragment() {
         return view
     }
 
-    private fun enviarNotificacion(token: String) {
-        val executor = Executors.newSingleThreadExecutor()
-        executor.execute {
-            try {
-                val accessToken = getAccessToken()
-                val message = JSONObject().apply {
-                    put("message", JSONObject().apply {
-                        put("token", token)
-                        put("notification", JSONObject().apply {
-                            put("title", "Breaking News")
-                            put("body", "New news story available.")
-                        })
-                        put("data", JSONObject().apply {
-                            put("story_id", "story_12345")
-                        })
-                    })
-                }
-
-                val url = URL("https://fcm.googleapis.com/v1/projects/novasentinel-30414/messages:send")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Authorization", "Bearer $accessToken")
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.doOutput = true
-
-                val outputStream = DataOutputStream(conn.outputStream)
-                outputStream.writeBytes(message.toString())
-                outputStream.flush()
-                outputStream.close()
-
-                val responseCode = conn.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("FCM", "Notification sent successfully.")
-                } else {
-                    Log.e("FCM", "Failed to send notification. Response code: $responseCode")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+    private fun getCurrentLocation() {
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Request location permissions if not granted
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                101
+            )
+            return
+        }
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
+                saveAlertToFirestore(latitude, longitude)
+            } else {
+                Log.e("Location", "Failed to get location")
             }
         }
     }
 
-    private fun getAccessToken(): String {
-        val credentials = GoogleCredentials
-            .fromStream(requireContext().assets.open("service_account.json"))
-            .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
-        credentials.refreshIfExpired()
-        return credentials.accessToken.tokenValue
+    private fun saveAlertToFirestore(latitude: Double, longitude: Double) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userEmail = currentUser?.email
+
+        // Fetch the entity ID for the logged in user
+        FirebaseFirestore.getInstance().collection("usuarios").document(userEmail!!).get() // Cambiado de "users" a "usuarios"
+            .addOnSuccessListener { document ->
+                val entityId = document.getString("entityId")
+
+                if (entityId != null) {
+                    // Save alert to Firestore
+                    val alertData = HashMap<String, Any>()
+                    alertData["title"] = "Emergencia"
+                    alertData["body"] = "El usuario ha enviado una emergencia."
+                    alertData["latitude"] = latitude.toString()
+                    alertData["longitude"] = longitude.toString()
+                    alertData["entityId"] = entityId
+
+                    FirebaseFirestore.getInstance().collection("alerts").add(alertData)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Alert saved successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error saving alert", e)
+                        }
+                } else {
+                    Log.e("Firestore", "Entity ID not found for user.")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error fetching entity ID", e)
+            }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso de ubicación concedido, obtener la ubicación nuevamente
+                getCurrentLocation()
+            } else {
+                Log.e("Permissions", "Location permission denied")
+            }
+        }
     }
 }
-

@@ -68,6 +68,10 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore:24.2.1")
     implementation ("com.google.auth:google-auth-library-oauth2-http:1.1.0")
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("com.google.maps.android:android-maps-utils:2.2.5")
+
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
@@ -76,6 +80,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
