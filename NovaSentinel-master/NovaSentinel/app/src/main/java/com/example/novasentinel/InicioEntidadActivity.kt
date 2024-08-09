@@ -1,5 +1,6 @@
 package com.example.novasentinel
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -19,6 +20,17 @@ class InicioEntidadActivity : AppCompatActivity() {
         setContentView(R.layout.activity_inicio_entidad)
 
         auth = FirebaseAuth.getInstance()
+
+        // Verifica si ya hay una sesión activa
+        val sharedPreferences = getSharedPreferences("EntidadPrefs", Context.MODE_PRIVATE)
+        val sesionActiva = sharedPreferences.getBoolean("sesionActiva", false)
+
+        if (sesionActiva) {
+            // Redirige automáticamente a MenuEntidadActivity
+            val intent = Intent(this, MenuEntidadActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         // Botón para iniciar sesión
         val btnEntrarE = findViewById<Button>(R.id.btnEntrarE)
@@ -60,17 +72,22 @@ class InicioEntidadActivity : AppCompatActivity() {
                             .addOnSuccessListener { document ->
                                 if (document.exists()) {
                                     // El usuario actual es una entidad
-                                    // Obtener el token FCM
                                     FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
                                         if (tokenTask.isSuccessful) {
                                             val token = tokenTask.result
-                                            // Guardar el token FCM en Firestore
                                             entidadesRef.document(usuarioActual.uid)
                                                 .update("fcmToken", token)
                                                 .addOnSuccessListener {
+                                                    // Guardar la sesión activa
+                                                    val sharedPreferences = getSharedPreferences("EntidadPrefs", Context.MODE_PRIVATE)
+                                                    with(sharedPreferences.edit()) {
+                                                        putBoolean("sesionActiva", true)
+                                                        apply()
+                                                    }
+
                                                     val intent = Intent(this, MenuEntidadActivity::class.java)
                                                     startActivity(intent)
-                                                    finish() // Esto cierra la actividad actual, por lo que al volver atrás desde MenuEntidadActivity, no volverá aquí.
+                                                    finish()
                                                 }
                                                 .addOnFailureListener { e ->
                                                     Toast.makeText(this, "Error al guardar el token FCM: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -89,11 +106,9 @@ class InicioEntidadActivity : AppCompatActivity() {
                                 Toast.makeText(this, "Error al verificar tipo de usuario: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                     } else {
-                        // Usuario actual es nulo
                         Toast.makeText(this, "No se pudo obtener información del usuario", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    // Si el inicio de sesión falla, muestra un mensaje al usuario.
                     Toast.makeText(this, "Error al iniciar sesión: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }

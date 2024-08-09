@@ -80,36 +80,48 @@ class BotonFragment : Fragment() {
     }
 
     private fun saveAlertToFirestore(latitude: Double, longitude: Double) {
+        Log.d("Firestore", "saveAlertToFirestore called with latitude: $latitude, longitude: $longitude")
+
         val currentUser = FirebaseAuth.getInstance().currentUser
+        Log.d("Firestore", "Current user: $currentUser")
+
         val userEmail = currentUser?.email
+        Log.d("Firestore", "User email: $userEmail")
 
-        // Fetch the entity ID for the logged in user
-        FirebaseFirestore.getInstance().collection("usuarios").document(userEmail!!).get() // Cambiado de "users" a "usuarios"
+        if (userEmail == null) {
+            Log.e("Firestore", "User email is null")
+            return
+        }
+
+        FirebaseFirestore.getInstance().collection("usuarios").document(userEmail).get()
             .addOnSuccessListener { document ->
-                val entityId = document.getString("entityId")
+                Log.d("Firestore", "Document snapshot received: ${document.data}")
 
-                if (entityId != null) {
-                    // Save alert to Firestore
-                    val alertData = HashMap<String, Any>()
-                    alertData["title"] = "Emergencia"
-                    alertData["body"] = "El usuario ha enviado una emergencia."
-                    alertData["latitude"] = latitude.toString()
-                    alertData["longitude"] = longitude.toString()
-                    alertData["entityId"] = entityId
+                val entidadAsociada = document.getString("entidadAsociada")
+                Log.d("Firestore", "Entidad asociada: $entidadAsociada")
 
-                    FirebaseFirestore.getInstance().collection("alerts").add(alertData)
-                        .addOnSuccessListener {
-                            Log.d("Firestore", "Alert saved successfully")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firestore", "Error saving alert", e)
-                        }
-                } else {
-                    Log.e("Firestore", "Entity ID not found for user.")
+                if (entidadAsociada.isNullOrEmpty()) {
+                    Log.e("Firestore", "Entidad asociada is null or empty")
+                    return@addOnSuccessListener
                 }
+
+                val alertData = HashMap<String, Any>()
+                alertData["titulo"] = "Emergencia"
+                alertData["body"] = "El usuario ha enviado una emergencia."
+                alertData["latitude"] = latitude.toString()
+                alertData["longitude"] = longitude.toString()
+                alertData["entityID"] = entidadAsociada
+
+                FirebaseFirestore.getInstance().collection("alerts").add(alertData)
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Alert saved successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Error saving alert", e)
+                    }
             }
             .addOnFailureListener { e ->
-                Log.e("Firestore", "Error fetching entity ID", e)
+                Log.e("Firestore", "Error fetching entidad asociada", e)
             }
     }
 
@@ -125,3 +137,4 @@ class BotonFragment : Fragment() {
         }
     }
 }
+
