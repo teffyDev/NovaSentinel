@@ -1,14 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fondoc"
+    android:background="@drawable/fondon"
     tools:context=".ui.notificacion.NotificacionFragment">
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
+    <!-- Vista para mostrar cuando no hay alertas -->
+    <LinearLayout
+        android:id="@+id/noAlertsView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="180dp"
+            android:layout_height="204dp"
+            android:src="@drawable/proteger_notificacion" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No hay alertas por el momento"
+            android:textSize="18sp"
+            android:paddingTop="16dp" />
+    </LinearLayout>
 </FrameLayout>

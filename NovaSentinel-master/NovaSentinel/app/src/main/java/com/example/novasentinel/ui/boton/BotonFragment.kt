@@ -44,6 +44,7 @@ class BotonFragment : Fragment() {
                     // Cambiar imagen al presionar
                     imageButton.setImageDrawable(imageButtonPressed)
                 }
+
                 MotionEvent.ACTION_UP -> {
                     // Cambiar imagen al soltar
                     imageButton.setImageDrawable(imageButtonNormal)
@@ -58,12 +59,23 @@ class BotonFragment : Fragment() {
     }
 
     private fun getCurrentLocation() {
-        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        val fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(requireActivity())
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             // Request location permissions if not granted
             requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 101
             )
             return
@@ -93,37 +105,59 @@ class BotonFragment : Fragment() {
             return
         }
 
-        FirebaseFirestore.getInstance().collection("usuarios").document(userEmail).get()
-            .addOnSuccessListener { document ->
-                Log.d("Firestore", "Document snapshot received: ${document.data}")
+        FirebaseFirestore.getInstance().collection("usuarios")
+            .whereEqualTo("correo", userEmail)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document = querySnapshot.documents[0]
+                    val entidadAsociada = document.getString("entidadAsociada")
+                    Log.d("Firestore", "Entidad asociada: $entidadAsociada")
 
-                val entidadAsociada = document.getString("entidadAsociada")
-                Log.d("Firestore", "Entidad asociada: $entidadAsociada")
+                    if (entidadAsociada.isNullOrEmpty()) {
+                        Log.e("Firestore", "Entidad asociada is null or empty")
+                        return@addOnSuccessListener
+                    }
 
-                if (entidadAsociada.isNullOrEmpty()) {
-                    Log.e("Firestore", "Entidad asociada is null or empty")
-                    return@addOnSuccessListener
+                    FirebaseFirestore.getInstance().collection("entidades")
+                        .whereEqualTo("nombreEmpresa", entidadAsociada)
+                        .get()
+                        .addOnSuccessListener { entidadSnapshot ->
+                            if (!entidadSnapshot.isEmpty) {
+                                val entityDocument = entidadSnapshot.documents[0]
+                                val entityId = entityDocument.id
+
+                                val alertData = HashMap<String, Any>()
+                                alertData["titulo"] = "Emergencia"
+                                alertData["body"] = "El usuario ha enviado una emergencia."
+                                alertData["latitude"] = latitude.toString()
+                                alertData["longitude"] = longitude.toString()
+                                alertData["entityID"] = entityId
+
+                                FirebaseFirestore.getInstance().collection("alerts").add(alertData)
+                                    .addOnSuccessListener {
+                                        Log.d("Firestore", "Alert saved successfully")
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("Firestore", "Error saving alert", e)
+                                    }
+                            } else {
+                                Log.e("Firestore", "No entity found with nombreEmpresa: $entidadAsociada")
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error fetching entidad with nombreEmpresa", e)
+                        }
+                } else {
+                    Log.e("Firestore", "No user document found with the given email.")
                 }
-
-                val alertData = HashMap<String, Any>()
-                alertData["titulo"] = "Emergencia"
-                alertData["body"] = "El usuario ha enviado una emergencia."
-                alertData["latitude"] = latitude.toString()
-                alertData["longitude"] = longitude.toString()
-                alertData["entityID"] = entidadAsociada
-
-                FirebaseFirestore.getInstance().collection("alerts").add(alertData)
-                    .addOnSuccessListener {
-                        Log.d("Firestore", "Alert saved successfully")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("Firestore", "Error saving alert", e)
-                    }
             }
             .addOnFailureListener { e ->
-                Log.e("Firestore", "Error fetching entidad asociada", e)
+                Log.e("Firestore", "Error fetching user document.", e)
             }
     }
+
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

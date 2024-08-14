@@ -18,6 +18,7 @@ class NotificacionFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mapView: MapView
     private lateinit var googleMap: GoogleMap
+    private lateinit var noAlertsView: View // Para mostrar el mensaje de "no hay alertas"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,8 +26,21 @@ class NotificacionFragment : Fragment(), OnMapReadyCallback {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_notificacion, container, false)
         mapView = view.findViewById(R.id.mapView)
+        noAlertsView = view.findViewById(R.id.noAlertsView) // Vista de mensaje e imagen
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+
+        val latitude = arguments?.getString("latitude")?.toDoubleOrNull()
+        val longitude = arguments?.getString("longitude")?.toDoubleOrNull()
+
+        if (latitude != null && longitude != null) {
+            mapView.visibility = View.VISIBLE
+            noAlertsView.visibility = View.GONE
+            mapView.getMapAsync(this)
+        } else {
+            mapView.visibility = View.GONE
+            noAlertsView.visibility = View.VISIBLE
+        }
+
         return view
     }
 
@@ -38,9 +52,10 @@ class NotificacionFragment : Fragment(), OnMapReadyCallback {
         if (latitude != null && longitude != null) {
             val location = com.google.android.gms.maps.model.LatLng(latitude, longitude)
             googleMap.addMarker(MarkerOptions().position(location).title("Última ubicación"))
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 18f))
         }
     }
+
 
     override fun onResume() {
         super.onResume()

@@ -42,7 +42,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("latitude", latitude)
             putExtra("longitude", longitude)
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("navigateToFragment", "NotificacionFragment") // Esto indica que debe ir al fragmento específico
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
 
@@ -60,6 +61,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         Log.d(TAG, "Notification sent with title: $title and body: $body")
     }
+
 
     private fun createNotificationChannel(notificationManager: NotificationManager, channelId: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -81,34 +83,51 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         if (userEmail != null) {
             val db = FirebaseFirestore.getInstance()
-            val usersCollection = "usuarios"  // Reemplaza con el nombre correcto de tu colección de usuarios
-            val entitiesCollection = "entidades"  // Reemplaza con el nombre correcto de tu colección de entidades
 
-            db.collection(usersCollection).document(userEmail).get()
-                .addOnSuccessListener { document ->
-                    if (document != null) {
-                        val entityId = document.getString("entityId")
-                        if (entityId != null) {
-                            val entityRef = db.collection(entitiesCollection).document(entityId)
-                            entityRef.update("fcmToken", token)
-                                .addOnSuccessListener {
-                                    Log.d(TAG, "Token updated successfully in Firestore.")
+            db.collection("usuarios").whereEqualTo("correo", userEmail).get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        val document = documents.documents[0]
+                        val entidadAsociada = document.getString("entidadAsociada")
+                        if (entidadAsociada != null) {
+                            // Aquí buscamos la entidad usando el campo nombreEmpresa
+                            db.collection("entidades")
+                                .whereEqualTo("nombreEmpresa", entidadAsociada)
+                                .get()
+                                .addOnSuccessListener { querySnapshot ->
+                                    if (!querySnapshot.isEmpty) {
+                                        val entityDocument = querySnapshot.documents[0]
+                                        val entityId = entityDocument.id
+
+                                        // Actualizamos el token en el documento de la entidad encontrada
+                                        db.collection("entidades").document(entityId)
+                                            .update("fcmToken", token)
+                                            .addOnSuccessListener {
+                                                Log.d(TAG, "Token updated successfully in Firestore.")
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.e(TAG, "Error updating token in Firestore.", e)
+                                            }
+                                    } else {
+                                        Log.e(TAG, "No entity found with nombreEmpresa: $entidadAsociada")
+                                    }
                                 }
                                 .addOnFailureListener { e ->
-                                    Log.e(TAG, "Error updating token in Firestore.", e)
+                                    Log.e(TAG, "Error fetching entidad with nombreEmpresa", e)
                                 }
                         } else {
-                            Log.e(TAG, "Entity ID not found for user.")
+                            Log.e(TAG, "Entidad asociada not found for user.")
                         }
                     } else {
-                        Log.e(TAG, "No such document for user.")
+                        Log.e(TAG, "No user found with the given email.")
                     }
                 }
                 .addOnFailureListener { e ->
-                    Log.e(TAG, "Error getting document for user.", e)
+                    Log.e(TAG, "Error getting user document.", e)
                 }
         }
     }
+
 
     companion object {
         private const val TAG = "MyFirebaseMsgService"
