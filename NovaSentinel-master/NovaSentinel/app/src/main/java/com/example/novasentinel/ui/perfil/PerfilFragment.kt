@@ -12,7 +12,6 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.novasentinel.R
-import com.example.novasentinel.HistorialUsuarioActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -46,7 +45,6 @@ class PerfilFragment : Fragment() {
         txtFechaU = view.findViewById(R.id.txtFechaU)
         txtGenero = view.findViewById(R.id.TextGenero)
         btnActualizar = view.findViewById(R.id.btnactualizar)
-        btnHistorial = view.findViewById(R.id.btnhistrorial)
 
         cargarDatosUsuario()
 
@@ -76,10 +74,7 @@ class PerfilFragment : Fragment() {
             actualizarDatosUsuario()
         }
 
-        btnHistorial.setOnClickListener {
-            val intent = Intent(requireContext(), HistorialUsuarioActivity::class.java)
-            startActivity(intent)
-        }
+       
 
         return view
     }

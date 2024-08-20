@@ -19,29 +19,39 @@ class AcosoFragment : Fragment() {
         // Inflar el diseño del fragmento
         val view = inflater.inflate(R.layout.fragment_acoso, container, false)
 
-        // Obtener la referencia al ImageButton
+        // Obtener la referencia al ImageButton para la denuncia
         val btnDenuncia: ImageButton = view.findViewById(R.id.btndenuncia)
 
-        // Configurar OnClickListener para el ImageButton
+        // Configurar OnClickListener para el ImageButton de denuncia
         btnDenuncia.setOnClickListener {
             val url = "https://www.fiscalia.gov.co/colombia/wp-content/uploads/Salas-de-Recepción-de-Denuncias.pdf"
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
             startActivity(intent)
         }
-        // Obtener la referencia al botón
+
+        // Obtener la referencia al ImageButton para el botón púrpura
         val btnPurpura: ImageButton = view.findViewById(R.id.btnpurpura)
 
-// Configurar el listener de clic para el botón
+        // Configurar el listener de clic para el botón púrpura
         btnPurpura.setOnClickListener {
-            // Abrir el enlace al hacer clic en el botón
+            // Abrir el enlace al hacer clic en el botón púrpura
             val url = "https://sdmujer.gov.co/nuestros-servicios/servicios-para-las-mujeres/linea-purpura"
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
             startActivity(intent)
         }
 
+        // Obtener la referencia al ImageButton para Instagram
+        val btnInstagram: ImageButton = view.findViewById(R.id.imageButtonInstagram)
 
+        // Configurar el listener de clic para el ImageButton de Instagram
+        btnInstagram.setOnClickListener {
+            val url = "https://www.instagram.com/novasentinel/"
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
+        }
 
         // Retornar la vista inflada
         return view

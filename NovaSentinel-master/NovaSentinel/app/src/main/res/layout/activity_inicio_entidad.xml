@@ -89,6 +89,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.723" />
 
+    <ImageButton
+        android:id="@+id/togglePasswordVisibility"
+        android:layout_width="43dp"
+        android:layout_height="42dp"
+        android:background="?attr/selectableItemBackground"
+        android:padding="8dp"
+        android:src="@drawable/ojoac"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.834"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.714" />
+
     <EditText
         android:id="@+id/txtCorreoE"
         android:layout_width="219dp"

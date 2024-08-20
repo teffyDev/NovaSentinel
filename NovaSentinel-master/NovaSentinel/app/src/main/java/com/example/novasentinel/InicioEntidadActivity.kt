@@ -3,8 +3,10 @@ package com.example.novasentinel
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -14,12 +16,18 @@ import com.google.firebase.messaging.FirebaseMessaging
 class InicioEntidadActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var passwordEditText: EditText
+    private lateinit var togglePasswordVisibility: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inicio_entidad)
 
         auth = FirebaseAuth.getInstance()
+
+        // Referencias a los componentes del diseño
+        passwordEditText = findViewById(R.id.txtConreseñaE)
+        togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility)
 
         // Verifica si ya hay una sesión activa
         val sharedPreferences = getSharedPreferences("EntidadPrefs", Context.MODE_PRIVATE)
@@ -30,6 +38,11 @@ class InicioEntidadActivity : AppCompatActivity() {
             val intent = Intent(this, MenuEntidadActivity::class.java)
             startActivity(intent)
             finish()
+        }
+
+        // Configuración del botón de visibilidad de la contraseña
+        togglePasswordVisibility.setOnClickListener {
+            togglePasswordVisibility()
         }
 
         // Botón para iniciar sesión
@@ -53,9 +66,23 @@ class InicioEntidadActivity : AppCompatActivity() {
         }
     }
 
+    private fun togglePasswordVisibility() {
+        if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+            // La contraseña está visible, oculta la contraseña
+            passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            togglePasswordVisibility.setImageResource(R.drawable.ojocc)
+        } else {
+            // La contraseña está oculta, muéstrala
+            passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            togglePasswordVisibility.setImageResource(R.drawable.ojoac)
+        }
+        // Mueve el cursor al final del texto
+        passwordEditText.setSelection(passwordEditText.text.length)
+    }
+
     private fun iniciarSesion() {
         val correo = findViewById<EditText>(R.id.txtCorreoE).text.toString().trim()
-        val contraseña = findViewById<EditText>(R.id.txtConreseñaE).text.toString().trim()
+        val contraseña = passwordEditText.text.toString().trim()
 
         if (correo.isEmpty() || contraseña.isEmpty()) {
             Toast.makeText(this, "Por favor ingresa el correo y la contraseña", Toast.LENGTH_SHORT).show()

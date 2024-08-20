@@ -88,6 +88,21 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.723" />
 
+
+    <ImageButton
+        android:id="@+id/btnShowPassword"
+        android:layout_width="43dp"
+        android:layout_height="42dp"
+        android:background="?attr/selectableItemBackground"
+        android:padding="8dp"
+        android:src="@drawable/ojoan"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.834"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.715" />
+
     <EditText
         android:id="@+id/txtCorreoU"
         android:layout_width="219dp"
@@ -169,12 +184,12 @@
         android:id="@+id/btnRegistrateU"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/naranja"
         android:fontFamily="casual"
         android:text="@string/registrar"
         android:textColor="@color/blanco"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:backgroundTint="@color/naranja"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -186,11 +201,11 @@
         android:id="@+id/btnRestablacerU"
         android:layout_width="207dp"
         android:layout_height="74dp"
+        android:backgroundTint="@color/naranja"
         android:fontFamily="casual"
         android:text="@string/olvido"
         android:textColor="@color/blanco"
         android:textSize="15sp"
-        android:backgroundTint="@color/naranja"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.078"

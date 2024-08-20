@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +19,8 @@ class InicioUsuarioActivity : AppCompatActivity() {
     private lateinit var txtContraseñaU: EditText
     private lateinit var checkboxRememberMe: CheckBox
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var btnShowPassword: ImageView
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +42,12 @@ class InicioUsuarioActivity : AppCompatActivity() {
         // Recuperar el estado de "Recuérdame" desde SharedPreferences
         checkboxRememberMe.isChecked = sharedPreferences.getBoolean("remember_me", false)
 
+        // Inicializar botón para mostrar/ocultar contraseña
+        btnShowPassword = findViewById(R.id.btnShowPassword)
+        btnShowPassword.setOnClickListener {
+            togglePasswordVisibility()
+        }
+
         // Botón para iniciar sesión
         val btnEntrarU = findViewById<Button>(R.id.btnEntrarU)
         btnEntrarU.setOnClickListener {
@@ -58,6 +67,21 @@ class InicioUsuarioActivity : AppCompatActivity() {
             val intent = Intent(this, RestablecerUsuarioActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Contraseña oculta
+            txtContraseñaU.inputType = 129 // InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD
+            btnShowPassword.setImageResource(R.drawable.ojocn) // Cambiar al ícono de ojo cerrado
+        } else {
+            // Contraseña visible
+            txtContraseñaU.inputType = 144 // InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            btnShowPassword.setImageResource(R.drawable.ojoan) // Cambiar al ícono de ojo abierto
+        }
+        // Cambiar el cursor al final del campo
+        txtContraseñaU.setSelection(txtContraseñaU.text.length)
+        isPasswordVisible = !isPasswordVisible
     }
 
     private fun iniciarSesion() {
@@ -108,4 +132,3 @@ class InicioUsuarioActivity : AppCompatActivity() {
             }
     }
 }
-
