@@ -42,26 +42,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+        setContentView(R.layout.activity_main)
 
+        // Asegúrate de que este fragmento está presente en activity_main.xml
         if (intent.hasExtra("latitude") && intent.hasExtra("longitude")) {
             val latitude = intent.getStringExtra("latitude")
             val longitude = intent.getStringExtra("longitude")
 
-            val fragment = NotificacionFragment().apply {
-                arguments = Bundle().apply {
-                    putString("latitude", latitude)
-                    putString("longitude", longitude)
+            if (latitude != null && longitude != null) {
+                val fragment = NotificacionFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("latitude", latitude)
+                        putString("longitude", longitude)
+                    }
                 }
-            }
 
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.main, fragment)
-                .commit()
-            return
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainerView, fragment)
+                    .commit()
+                return
+            }
         }
 
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fragmentContainerView)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -69,7 +72,11 @@ class MainActivity : AppCompatActivity() {
 
         // Solicitar permisos de notificación y ubicación
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             checkAndRequestLocationPermission()
@@ -118,8 +125,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun hasLocationPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestLocationPermissions() {
@@ -137,21 +150,23 @@ class MainActivity : AppCompatActivity() {
             val latitude = it.getStringExtra("latitude")
             val longitude = it.getStringExtra("longitude")
             if (latitude != null && longitude != null) {
-                // Crea una instancia de NotificacionFragment con los argumentos de ubicación
-                val fragment = NotificacionFragment().apply {
-                    arguments = Bundle().apply {
-                        putString("latitude", latitude)
-                        putString("longitude", longitude)
+                val fragment =
+                    supportFragmentManager.findFragmentById(R.id.main) as? NotificacionFragment
+                if (fragment == null) {
+                    // Crea una instancia de NotificacionFragment con los argumentos de ubicación
+                    val newFragment = NotificacionFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("latitude", latitude)
+                            putString("longitude", longitude)
+                        }
                     }
-                }
 
-                // Reemplaza el contenido del contenedor con el NotificacionFragment
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainerView, fragment) // Usa el ID correcto del contenedor en tu layout
-                    .commit()
+                    // Reemplaza el contenido del contenedor con el NotificacionFragment
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerView, newFragment)
+                        .commit()
+                }
             }
         }
     }
-
 }
-

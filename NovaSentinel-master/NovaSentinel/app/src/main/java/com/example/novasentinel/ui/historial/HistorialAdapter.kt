@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.novasentinel.Alert
 import com.example.novasentinel.databinding.ItemHistorialBinding
 import com.example.novasentinel.R
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HistorialAdapter(private var alerts: List<Alert>) :
     RecyclerView.Adapter<HistorialAdapter.HistorialViewHolder>() {
@@ -23,7 +24,25 @@ class HistorialAdapter(private var alerts: List<Alert>) :
         val alert = alerts[position]
         holder.tvTitle.text = alert.titulo
         holder.tvBody.text = alert.body
-        holder.tvUser.text = "Entidad ID: ${alert.entityID}"
+        holder.tvUser.text = "Usuario: ${alert.userID ?: "Usuario desconocido"}"
+
+
+        // Usar el userId para obtener el nombre del usuario
+        val db = FirebaseFirestore.getInstance()
+        alert.userID?.let {
+            db.collection("usuarios").document(it).get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        val nombreUsuario = document.getString("nombre") ?: "Usuario desconocido"
+                        holder.tvUser.text = "Usuario: $nombreUsuario"
+                    } else {
+                        holder.tvUser.text = "Usuario no encontrado"
+                    }
+                }
+                .addOnFailureListener {
+                    holder.tvUser.text = "Error al obtener el nombre del usuario"
+                }
+        }
 
         val latitude = alert.getLatitudeAsDouble()
         val longitude = alert.getLongitudeAsDouble()

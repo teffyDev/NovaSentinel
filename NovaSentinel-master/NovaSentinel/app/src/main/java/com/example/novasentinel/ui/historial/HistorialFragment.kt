@@ -51,3 +51,4 @@ class HistorialFragment : Fragment() {
         _binding = null
     }
 }
+

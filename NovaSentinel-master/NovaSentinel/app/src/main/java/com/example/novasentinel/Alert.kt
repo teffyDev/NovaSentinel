@@ -5,7 +5,8 @@ data class Alert(
     val body: String = "",
     val entityID: String = "",
     val latitude: String? = null,
-    val longitude: String? = null
+    val longitude: String? = null,
+    var userID: String? = ""
 ) {
     // Métodos adicionales si es necesario
     fun getLatitudeAsDouble(): Double? {

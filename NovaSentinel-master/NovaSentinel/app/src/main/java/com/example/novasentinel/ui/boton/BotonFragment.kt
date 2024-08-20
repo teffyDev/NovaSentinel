@@ -92,13 +92,8 @@ class BotonFragment : Fragment() {
     }
 
     private fun saveAlertToFirestore(latitude: Double, longitude: Double) {
-        Log.d("Firestore", "saveAlertToFirestore called with latitude: $latitude, longitude: $longitude")
-
         val currentUser = FirebaseAuth.getInstance().currentUser
-        Log.d("Firestore", "Current user: $currentUser")
-
         val userEmail = currentUser?.email
-        Log.d("Firestore", "User email: $userEmail")
 
         if (userEmail == null) {
             Log.e("Firestore", "User email is null")
@@ -112,10 +107,10 @@ class BotonFragment : Fragment() {
                 if (!querySnapshot.isEmpty) {
                     val document = querySnapshot.documents[0]
                     val entidadAsociada = document.getString("entidadAsociada")
-                    Log.d("Firestore", "Entidad asociada: $entidadAsociada")
+                    val userName = document.getString("nombre")
 
-                    if (entidadAsociada.isNullOrEmpty()) {
-                        Log.e("Firestore", "Entidad asociada is null or empty")
+                    if (entidadAsociada.isNullOrEmpty() || userName.isNullOrEmpty()) {
+                        Log.e("Firestore", "Entidad asociada or userName is null or empty")
                         return@addOnSuccessListener
                     }
 
@@ -129,10 +124,11 @@ class BotonFragment : Fragment() {
 
                                 val alertData = HashMap<String, Any>()
                                 alertData["titulo"] = "Emergencia"
-                                alertData["body"] = "El usuario ha enviado una emergencia."
+                                alertData["body"] = "El usuario $userName ha enviado una emergencia."
                                 alertData["latitude"] = latitude.toString()
                                 alertData["longitude"] = longitude.toString()
                                 alertData["entityID"] = entityId
+                                alertData["userName"] = userName // Guardar el nombre del usuario
 
                                 FirebaseFirestore.getInstance().collection("alerts").add(alertData)
                                     .addOnSuccessListener {
@@ -156,6 +152,7 @@ class BotonFragment : Fragment() {
                 Log.e("Firestore", "Error fetching user document.", e)
             }
     }
+
 
 
 
