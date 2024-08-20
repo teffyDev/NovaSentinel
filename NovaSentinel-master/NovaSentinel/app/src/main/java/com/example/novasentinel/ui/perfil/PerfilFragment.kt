@@ -74,7 +74,7 @@ class PerfilFragment : Fragment() {
             actualizarDatosUsuario()
         }
 
-       
+
 
         return view
     }

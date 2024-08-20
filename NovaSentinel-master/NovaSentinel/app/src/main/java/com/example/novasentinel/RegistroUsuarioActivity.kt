@@ -9,7 +9,6 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -29,8 +28,6 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     private lateinit var txtContraseñaUR: EditText
     private lateinit var txtTipoIdentificacionU: EditText
     private lateinit var txtEntidadAsoc: EditText
-    private lateinit var btnShowHidePasswordU: ImageButton
-    private lateinit var btnShowHidePasswordUR: ImageButton
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.US)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,35 +48,6 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         txtContraseñaUR = findViewById(R.id.txtContraseñaUR)
         txtTipoIdentificacionU = findViewById(R.id.txtTipoIdentificacionU)
         txtEntidadAsoc = findViewById(R.id.TexEntidadAsoc)
-
-        // Inicializar botones de mostrar/ocultar contraseña
-        btnShowHidePasswordU = findViewById(R.id.btnShowHidePasswordU)
-        btnShowHidePasswordUR = findViewById(R.id.btnShowHidePasswordUR)
-
-        var isPasswordVisibleU = false
-        var isPasswordVisibleUR = false
-
-        btnShowHidePasswordU.setOnClickListener {
-            isPasswordVisibleU = !isPasswordVisibleU
-            txtContraseñaU.inputType = if (isPasswordVisibleU) {
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            } else {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
-            txtContraseñaU.setSelection(txtContraseñaU.text.length)
-            btnShowHidePasswordU.setImageResource(if (isPasswordVisibleU) R.drawable.ojocn else R.drawable.ojocn)
-        }
-
-        btnShowHidePasswordUR.setOnClickListener {
-            isPasswordVisibleUR = !isPasswordVisibleUR
-            txtContraseñaUR.inputType = if (isPasswordVisibleUR) {
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            } else {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
-            txtContraseñaUR.setSelection(txtContraseñaUR.text.length)
-            btnShowHidePasswordUR.setImageResource(if (isPasswordVisibleUR) R.drawable.ojoan else R.drawable.ojocn)
-        }
 
         // Desactivar teclado para los campos de tipo de documento y entidad
         txtTipoIdentificacionU.inputType = InputType.TYPE_NULL
@@ -159,7 +127,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     }
 
     private fun showDocumentTypePickerDialog() {
-        val documentTypes = arrayOf("T.I", "C.C", "C.E", "Pasaporte")
+        val documentTypes = arrayOf("Tarjeta de Identidad", "Cédula de Ciudadanía", "Cédula de Extranjería", "Pasaporte")
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Selecciona tu tipo de identificación")
         builder.setItems(documentTypes) { _, which ->
@@ -180,10 +148,10 @@ class RegistroUsuarioActivity : AppCompatActivity() {
             { _, selectedYear, selectedMonth, selectedDay ->
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(selectedYear, selectedMonth, selectedDay)
-                if (isAtLeast15YearsOld(selectedDate.time)) {
+                if (isAtLeast13YearsOld(selectedDate.time)) {
                     txtFechaU.setText(dateFormatter.format(selectedDate.time))
                 } else {
-                    Toast.makeText(this, "Debes tener al menos 15 años", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Debes tener al menos 13 años", Toast.LENGTH_SHORT).show()
                 }
             },
             year, month, day
@@ -191,9 +159,9 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    private fun isAtLeast15YearsOld(date: Date): Boolean {
+    private fun isAtLeast13YearsOld(date: Date): Boolean {
         val calendar = Calendar.getInstance()
-        calendar.add(Calendar.YEAR, -15)
+        calendar.add(Calendar.YEAR, -13)
         return date.before(calendar.time)
     }
 
@@ -201,47 +169,46 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         db.collection("entidades")
             .get()
             .addOnSuccessListener { result ->
-                val entities = result.map { it.getString("nombre") ?: "" }
+                val entities = result.map { it.getString("nombreEmpresa") ?: "Sin nombre" }
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle("Selecciona una entidad")
+                builder.setTitle("Selecciona tu entidad")
                 builder.setItems(entities.toTypedArray()) { _, which ->
                     txtEntidadAsoc.setText(entities[which])
                 }
                 builder.show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(this, "Error al cargar las entidades: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error al obtener entidades: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun registrarUsuario() {
-        val nombre = txtNombreU.text.toString()
-        val identificacion = txtIdentificacionU.text.toString()
-        val correo = txtCorreoU.text.toString()
-        val fechaNacimiento = txtFechaU.text.toString()
-        val genero = txtGenero.text.toString()
-        val tipoIdentificacion = txtTipoIdentificacionU.text.toString()
-        val entidadAsociada = txtEntidadAsoc.text.toString()
-        val contraseña = txtContraseñaU.text.toString()
-        val contraseñaR = txtContraseñaUR.text.toString()
+        // Obtener los datos del usuario
+        val nombre = txtNombreU.text.toString().trim()
+        val identificacion = txtIdentificacionU.text.toString().trim()
+        val correo = txtCorreoU.text.toString().trim()
+        val fechaNacimiento = txtFechaU.text.toString().trim()
+        val genero = txtGenero.text.toString().trim()
+        val tipoIdentificacion = txtTipoIdentificacionU.text.toString().trim()
+        val entidadAsociada = txtEntidadAsoc.text.toString().trim()
+        val contraseña = txtContraseñaU.text.toString().trim()
+        val contraseñaRepetida = txtContraseñaUR.text.toString().trim()
 
-        if (nombre.isEmpty() || identificacion.isEmpty() || correo.isEmpty() || fechaNacimiento.isEmpty() ||
-            genero.isEmpty() || tipoIdentificacion.isEmpty() || entidadAsociada.isEmpty() ||
-            contraseña.isEmpty() || contraseñaR.isEmpty()) {
-            Toast.makeText(this, "Por favor, llena todos los campos.", Toast.LENGTH_SHORT).show()
+        // Verificar que las contraseñas coincidan
+        if (contraseña != contraseñaRepetida) {
+            Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (contraseña != contraseñaR) {
-            Toast.makeText(this, "Las contraseñas no coinciden.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
+        // Registrar al usuario en Firebase Auth y Firestore
         auth.createUserWithEmailAndPassword(correo, contraseña)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    val userData = hashMapOf(
+                    // Obtener el ID del usuario registrado
+                    val userId = auth.currentUser?.uid
+
+                    // Crear un mapa con los datos del usuario
+                    val usuario = hashMapOf(
                         "nombre" to nombre,
                         "identificacion" to identificacion,
                         "correo" to correo,
@@ -249,23 +216,24 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                         "genero" to genero,
                         "tipoIdentificacion" to tipoIdentificacion,
                         "entidadAsociada" to entidadAsociada
+                        // Agrega más campos según sea necesario
                     )
 
-                    user?.let {
-                        db.collection("usuarios").document(it.uid)
-                            .set(userData)
-                            .addOnSuccessListener {
-                                Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
-                                val intent = Intent(this, InicioUsuarioActivity::class.java)
-                                startActivity(intent)
-                            }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(this, "Error al guardar los datos: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    }
+                    // Agregar el usuario a Cloud Firestore
+                    db.collection("usuarios")
+                        .document(userId!!)
+                        .set(usuario)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
+                            // Aquí puedes redirigir al usuario a otra actividad si deseas
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Error al registrar usuario: $e", Toast.LENGTH_SHORT).show()
+                        }
                 } else {
-                    Toast.makeText(this, "Error en el registro: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error al registrar usuario: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
     }
 }
+
