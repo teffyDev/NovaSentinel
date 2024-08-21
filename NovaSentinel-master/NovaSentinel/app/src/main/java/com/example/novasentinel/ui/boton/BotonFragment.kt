@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -133,9 +134,12 @@ class BotonFragment : Fragment() {
                                 FirebaseFirestore.getInstance().collection("alerts").add(alertData)
                                     .addOnSuccessListener {
                                         Log.d("Firestore", "Alert saved successfully")
+                                        // Mostrar mensaje de éxito
+                                        Toast.makeText(requireContext(), "Mensaje enviado con éxito", Toast.LENGTH_SHORT).show()
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("Firestore", "Error saving alert", e)
+                                        Toast.makeText(requireContext(), "Error al enviar el mensaje", Toast.LENGTH_SHORT).show()
                                     }
                             } else {
                                 Log.e("Firestore", "No entity found with nombreEmpresa: $entidadAsociada")
@@ -153,9 +157,6 @@ class BotonFragment : Fragment() {
             }
     }
 
-
-
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101) {
@@ -168,4 +169,3 @@ class BotonFragment : Fragment() {
         }
     }
 }
-
