@@ -105,7 +105,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
             txtContraseñaU.setSelection(txtContraseñaU.text.length)
-            btnShowHidePasswordU.setImageResource(if (isPasswordVisibleU) R.drawable.ojocn else R.drawable.ojocn)
+            btnShowHidePasswordU.setImageResource(if (isPasswordVisibleU) R.drawable.ojocn else R.drawable.ojoan)
         }
 
         btnShowHidePasswordUR.setOnClickListener {
@@ -116,7 +116,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
             txtContraseñaUR.setSelection(txtContraseñaUR.text.length)
-            btnShowHidePasswordUR.setImageResource(if (isPasswordVisibleUR) R.drawable.ojoan else R.drawable.ojocn)
+            btnShowHidePasswordUR.setImageResource(if (isPasswordVisibleUR) R.drawable.ojocn else R.drawable.ojoan)
         }
 
 
